@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  padding-top: 0;
+  width: 100%;
+  height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  background-color: black;
+  height: 100vh;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.content::-webkit-scrollbar {
+  display: none;
+}
+
+.search-input {
+  background-image: url("./images/search.svg");
+  background-repeat: no-repeat;
+  text-indent: 20px;
+  background-size: 18px;
+  background-position: 5% 50%;
+}
+
+.search-input:focus {
+  outline: none;
+}
+
+.content {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.fixed-header {
+  background-image: rgba(0, 0, 0, 0.9);
+
+  /* Add the blur effect */
+  filter: blur(8px);
+  -webkit-filter: blur(8px);
+
+  /* Center and scale the image nicely */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+textarea {
+  resize: none;
+}
