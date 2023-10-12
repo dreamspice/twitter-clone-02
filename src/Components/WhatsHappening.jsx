@@ -68,6 +68,7 @@ function WhatsHappening() {
       timestamp: firebase.database.ServerValue.TIMESTAMP,
       photoURL,
       howManyLikes: 0,
+      howManyComments: 0,
       comments: [],
       whoLiked: [],
       imageUrl,

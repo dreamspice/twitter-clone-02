@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import ReactDOM from "react-dom";
 import CloseIcon from "@mui/icons-material/Close";
 import { Avatar } from "@mui/material";
@@ -18,14 +18,23 @@ const Overlay = (props) => {
 };
 
 const Modal = (props) => {
+  let comment;
+  const handleInputChange = (e) => {
+    comment = e.target.value;
+    props.deliverComment(comment);
+  };
+
   return (
     <div
       className={`rounded-md z-[99] ${
         props.isOpen ? "fixed" : "hidden"
       } w-[40%] h-auto top-10 left-[50%] -translate-x-2/4 bg-black`}
     >
-      <div className="flex justify-between p-4">
-        <CloseIcon style={{ color: "white" }} onClick={props.closeModal} />
+      <div className="flex justify-between px-6 pt-4">
+        <CloseIcon
+          style={{ color: "white", cursor: "pointer" }}
+          onClick={props.closeModal}
+        />
         <span className="text-sky-500">Drafts</span>
       </div>
       <div className="flex gap-2 p-4">
@@ -53,7 +62,7 @@ const Modal = (props) => {
       </div>
       <div className="flex p-4">
         <Avatar sx={{ width: "40px", height: "40px" }} />
-        <form className="w-full">
+        <form className="w-full" onSubmit={props.addComment}>
           <div className="mt-2 ml-4">
             <textarea
               cols="20"
@@ -62,6 +71,8 @@ const Modal = (props) => {
               type="text"
               maxLength="152"
               className="w-full bg-black text-white outline-none placeholder:text-xl pb-16 max-w-md"
+              onChange={handleInputChange}
+              value={comment}
             ></textarea>
           </div>
 
@@ -99,7 +110,12 @@ const CommentModal = (props) => {
         document.getElementById("overlay-root")
       )}
       {ReactDOM.createPortal(
-        <Modal closeModal={props.closeModal} isOpen={props.isOpen} />,
+        <Modal
+          closeModal={props.closeModal}
+          isOpen={props.isOpen}
+          addComment={props.addComment}
+          deliverComment={props.deliverComment}
+        />,
         document.getElementById("modal-root")
       )}
     </React.Fragment>

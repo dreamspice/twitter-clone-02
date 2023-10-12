@@ -34,32 +34,6 @@ function Post(props) {
   });
 
   const addOrRemoveLike = async () => {
-    // const firebasePostRef = firebase.database().ref(`posts/${props.id}`);
-    // firebasePostRef.once("value").then((snapshot) => {
-    //   const value = snapshot.val();
-    //   const { whoLiked } = value;
-    //   console.log(whoLiked);
-    //   const user = whoLiked?.find((user) => user === userID);
-    //   if (!user) {
-    //     let currentLikes;
-    //     firebasePostRef.child("howManyLikes").once("value", (snapshot) => {
-    //       currentLikes = snapshot.val();
-    //       firebasePostRef.update({ howManyLikes: currentLikes + 1 });
-    //       firebasePostRef.update({ whoLiked: [userID] });
-    //       setIsLiked(true);
-    //     });
-    //   }
-    //   if (user) {
-    //     let currentLikes;
-    //     firebasePostRef.child("howManyLikes").once("value", (snapshot) => {
-    //       currentLikes = snapshot.val();
-    //       firebasePostRef.update({ howManyLikes: currentLikes + -1 });
-    //       firebasePostRef.update({ whoLiked: [] });
-    //       setIsLiked(false);
-    //     });
-    //   }
-    // });
-
     const firebasePostRef = firebase.database().ref(`posts/${props.id}`);
     firebasePostRef.once("value").then((snapshot) => {
       const value = snapshot.val();
@@ -105,16 +79,72 @@ function Post(props) {
     }
   };
 
-  const [isOpenAddComment, setIsOpenAddComment] = useState(true);
+  const [isOpenModal, setIsOpenModal] = useState(false);
+  const [deliveredComment, setDeliveredComment] = useState("");
 
-  const addComment = () => {
-    const firebasePostRef = firebase.database().ref(`post/${props.id}`);
-    console.log(firebasePostRef);
+  const openModal = () => {
+    setIsOpenModal((prevstate) => !prevstate);
+  };
+
+  const closeModal = () => {
+    setIsOpenModal((prevstate) => !prevstate);
+  };
+
+  const deliverComment = (comment) => {
+    setDeliveredComment(comment);
+  };
+
+  const addComment = async (e) => {
+    e.preventDefault();
+    if (!deliveredComment) return;
+
+    const firebasePostRef = firebase.database().ref(`posts/${props.id}`);
+
+    const commentsRef = firebasePostRef.child("comments");
+    const newCommentRef = commentsRef.push(); // Generuj unikatowy identyfikator
+    const commentKey = newCommentRef.key;
+
+    const commentData = {
+      id: commentKey,
+      authorId: userID,
+      text: deliveredComment,
+      timestamp: firebase.database.ServerValue.TIMESTAMP,
+    };
+
+    newCommentRef.set(commentData);
+
+    firebasePostRef.child("howManyComments").once("value", (snapshot) => {
+      const commentsRef = firebasePostRef.child("comments");
+
+      commentsRef.once("value").then((commentsSnapshot) => {
+        const numOfComments = commentsSnapshot.numChildren();
+
+        firebasePostRef.update({ howManyComments: numOfComments });
+      });
+    });
+
+    const postsRef = firebase.database().ref("posts");
+    try {
+      const snapshot = await postsRef.once("value");
+      const posts = snapshot.val();
+      dispatch(postsActions.setPosts(posts));
+    } catch (error) {
+      dispatch(postsActions.setError(error.message));
+    }
+    setDeliveredComment("");
+    closeModal();
   };
 
   return (
     <div className="w-full p-4 border-b-[1px] border-gray-700">
-      {isOpenAddComment && <CommentModal isOpen={true} />}
+      {isOpenModal && (
+        <CommentModal
+          isOpen={isOpenModal}
+          closeModal={closeModal}
+          addComment={addComment}
+          deliverComment={deliverComment}
+        />
+      )}
       <div className="flex">
         <div className="mr-4">
           <Avatar
@@ -139,10 +169,10 @@ function Post(props) {
           <div className="mt-2">
             <button
               className={"mr-4  text-gray-500 hover:text-sky-500"}
-              onClick={addComment}
+              onClick={openModal}
             >
               <ChatBubbleOutlineOutlinedIcon />
-              <span className="ml-1">{props.comments}</span>
+              <span className="ml-1">{props.howManyComments}</span>
             </button>
             <button
               className={`mr-4 text-gray-500 hover:text-red-500 ${

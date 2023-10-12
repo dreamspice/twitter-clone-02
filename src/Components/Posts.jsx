@@ -40,6 +40,7 @@ function Posts() {
               time={moment(post.timestamp).fromNow()}
               key={post.timestamp}
               likes={post.howManyLikes}
+              howManyComments={post.howManyComments}
               comments={post.comments}
               image={post.imageUrl}
             />
