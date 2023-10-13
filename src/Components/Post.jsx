@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { Avatar } from "@mui/material";
 import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
@@ -9,6 +9,10 @@ import "firebase/database";
 import { useDispatch } from "react-redux";
 import { postsActions } from "../store";
 import CommentModal from "./CommentModal";
+import Alert from "@mui/material/Alert";
+import AlertTitle from "@mui/material/AlertTitle";
+import { CSSTransition } from "react-transition-group";
+import "../index.css";
 
 function Post(props) {
   const userID = useSelector((state) => state.auth.currentUser.uid);
@@ -81,6 +85,18 @@ function Post(props) {
 
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [deliveredComment, setDeliveredComment] = useState("");
+  const [numberOfComments, setNumberOfComments] = useState();
+  const [error, setError] = useState(false);
+  const warningRef = useRef(null);
+
+  useEffect(() => {
+    const firebasePostRef = firebase.database().ref(`posts/${props.id}`);
+    const commentsRef = firebasePostRef.child("comments");
+    commentsRef.once("value").then((snapshot) => {
+      const numberOfComments = snapshot.numChildren();
+      setNumberOfComments(numberOfComments);
+    });
+  }, [deliveredComment]);
 
   const openModal = () => {
     setIsOpenModal((prevstate) => !prevstate);
@@ -96,7 +112,13 @@ function Post(props) {
 
   const addComment = async (e) => {
     e.preventDefault();
-    if (!deliveredComment) return;
+    if (!deliveredComment) {
+      setError(true);
+      setTimeout(() => {
+        setError(false);
+      }, 3000);
+      return;
+    }
 
     const firebasePostRef = firebase.database().ref(`posts/${props.id}`);
 
@@ -112,16 +134,6 @@ function Post(props) {
     };
 
     newCommentRef.set(commentData);
-
-    firebasePostRef.child("howManyComments").once("value", (snapshot) => {
-      const commentsRef = firebasePostRef.child("comments");
-
-      commentsRef.once("value").then((commentsSnapshot) => {
-        const numOfComments = commentsSnapshot.numChildren();
-
-        firebasePostRef.update({ howManyComments: numOfComments });
-      });
-    });
 
     const postsRef = firebase.database().ref("posts");
     try {
@@ -145,6 +157,25 @@ function Post(props) {
           deliverComment={deliverComment}
         />
       )}
+      <CSSTransition
+        nodeRef={warningRef}
+        in={error}
+        timeout={9000}
+        classNames="warning"
+      >
+        <div>
+          {error && (
+            <Alert
+              severity="warning"
+              className="z-[999] fixed left-2/4 -translate-x-2/4 top-2"
+              ref={warningRef}
+            >
+              <AlertTitle>Warning</AlertTitle>
+              <strong>Comment cannot be empty!</strong>
+            </Alert>
+          )}
+        </div>
+      </CSSTransition>
       <div className="flex">
         <div className="mr-4">
           <Avatar
@@ -172,7 +203,7 @@ function Post(props) {
               onClick={openModal}
             >
               <ChatBubbleOutlineOutlinedIcon />
-              <span className="ml-1">{props.howManyComments}</span>
+              <span className="ml-1">{numberOfComments}</span>
             </button>
             <button
               className={`mr-4 text-gray-500 hover:text-red-500 ${

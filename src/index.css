@@ -64,3 +64,21 @@ body::before {
 textarea {
   resize: none;
 }
+
+.warning-enter {
+  opacity: 0;
+}
+
+.warning-enter-active {
+  opacity: 1;
+  transition: opacity 3000ms;
+}
+
+.warning-exit {
+  opacity: 1;
+}
+
+.warning-exit-active {
+  opacity: 0;
+  transition: opacity 3000ms;
+}
