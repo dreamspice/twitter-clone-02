@@ -72,11 +72,13 @@ function WhatsHappening() {
       comments: [],
       whoLiked: [],
       imageUrl,
+      uid,
     };
     if (!text) return;
     newPostRef.set(newPost);
     setText("");
     setImage(null);
+    setThumbnail(null);
 
     const postsRef = firebase.database().ref("posts");
     try {

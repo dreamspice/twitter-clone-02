@@ -88,6 +88,8 @@ function Post(props) {
   const [numberOfComments, setNumberOfComments] = useState();
   const [error, setError] = useState(false);
 
+  const [postData, setPostData] = useState({});
+
   const warningRef = useRef(null);
 
   useEffect(() => {
@@ -99,7 +101,29 @@ function Post(props) {
     });
   }, [deliveredComment]);
 
-  const openModal = () => {
+  const openCommentModal = async () => {
+    const firebasePostRef = firebase.database().ref(`posts/${props.id}`);
+    try {
+      const textSnapshot = await firebasePostRef.child("text").once("value");
+      const text = textSnapshot.val();
+      const nameSnapshot = await firebasePostRef
+        .child("displayName")
+        .once("value");
+      const notSlicedName = nameSnapshot.val();
+      const nameArray = notSlicedName.split(" ");
+      const name = nameArray[0];
+      const fullName = notSlicedName;
+      const uidSnapshot = await firebasePostRef.child("uid").once("value");
+      const notSlicedUid = uidSnapshot.val();
+      const uid = notSlicedUid.slice(1, 6);
+      const photoSnapshot = await firebasePostRef
+        .child("photoURL")
+        .once("value");
+      const photo = photoSnapshot.val();
+      setPostData({ text, name, uid, fullName, photo });
+    } catch {
+      console.error(error);
+    }
     setIsOpenModal((prevstate) => !prevstate);
   };
 
@@ -156,6 +180,7 @@ function Post(props) {
           closeModal={closeModal}
           addComment={addComment}
           deliverComment={deliverComment}
+          postData={postData}
         />
       )}
       <CSSTransition
@@ -195,12 +220,12 @@ function Post(props) {
           </div>
           <div>
             <span>{props.text}</span>
-            <img src={props.image} className="w-4/6 mt-2 rounded-3xl" />
+            <img src={props.image} className="w-4/6 mt-2 rounded-3xl block" />
           </div>
           <div className="mt-2">
             <button
               className={"mr-4  text-gray-500 hover:text-sky-500"}
-              onClick={openModal}
+              onClick={openCommentModal}
             >
               <ChatBubbleOutlineOutlinedIcon />
               <span className="ml-1">{numberOfComments}</span>

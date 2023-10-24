@@ -138,8 +138,8 @@ function LeftSlider(props) {
           <div className="mr-4">
             <p className="font-medium">{displayName}</p>
             <p className="text-gray-400">{`@${displayName}${uid.slice(
-              0,
-              10
+              1,
+              6
             )}`}</p>
           </div>
           <MoreHorizOutlinedIcon />
