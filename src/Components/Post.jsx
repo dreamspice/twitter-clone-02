@@ -87,6 +87,7 @@ function Post(props) {
   const [deliveredComment, setDeliveredComment] = useState("");
   const [numberOfComments, setNumberOfComments] = useState();
   const [error, setError] = useState(false);
+
   const warningRef = useRef(null);
 
   useEffect(() => {
@@ -116,7 +117,7 @@ function Post(props) {
       setError(true);
       setTimeout(() => {
         setError(false);
-      }, 3000);
+      }, 9000);
       return;
     }
 
@@ -160,16 +161,15 @@ function Post(props) {
       <CSSTransition
         nodeRef={warningRef}
         in={error}
-        timeout={9000}
+        timeout={6000}
         classNames="warning"
       >
-        <div>
+        <div
+          ref={warningRef}
+          className="z-[999] fixed left-2/4 -translate-x-2/4 top-2"
+        >
           {error && (
-            <Alert
-              severity="warning"
-              className="z-[999] fixed left-2/4 -translate-x-2/4 top-2"
-              ref={warningRef}
-            >
+            <Alert severity="warning">
               <AlertTitle>Warning</AlertTitle>
               <strong>Comment cannot be empty!</strong>
             </Alert>
