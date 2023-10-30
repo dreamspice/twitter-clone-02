@@ -22,6 +22,7 @@ function Post(props) {
     const firebasePostRef = firebase.database().ref(`posts/${props.id}`);
     firebasePostRef.once("value").then((snapshot) => {
       const value = snapshot.val();
+      if (!value) return;
       const { whoLiked } = value;
       if (!whoLiked) return;
       const whoLikedArray = [];
@@ -220,7 +221,22 @@ function Post(props) {
           </div>
           <div>
             <span>{props.text}</span>
-            <img src={props.image} className="w-4/6 mt-2 rounded-3xl block" />
+            <div>
+              {props.images.length === 1 && (
+                <img src={props.images} className="mt-2 " />
+              )}
+            </div>
+            <div className={`grid grid-cols-${props.images.length}`}>
+              {props.images.length > 1 &&
+                props.images.map((image, key) => (
+                  <img src={image} className="mt-2 "></img>
+                ))}
+            </div>
+            {/* {props.images.map((image, key) => (
+            <div>
+              <img src={image}></img>
+            </div>
+          ))} */}
           </div>
           <div className="mt-2">
             <button

@@ -19,8 +19,7 @@ function WhatsHappening() {
 
   const [text, setText] = useState("");
 
-  const [image, setImage] = useState(null);
-  const [thumbnail, setThumbnail] = useState(null);
+  const [images, setImages] = useState([]);
 
   const fileInputRef = useRef(null);
 
@@ -31,34 +30,61 @@ function WhatsHappening() {
   // const handleImageChange = (e) => {
   //   const file = e.target.files[0];
   //   setImage(file);
+
+  //   const reader = new FileReader();
+  //   reader.onload = (e) => {
+  //     setThumbnail(e.target.result);
+  //   };
+  //   reader.readAsDataURL(file);
   // };
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setImage(file);
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setThumbnail(e.target.result);
-    };
-    reader.readAsDataURL(file);
+    const files = e.target.files;
+    console.log(files);
+    const imageArray = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        imageArray.push({ file, thumbnail: event.target.result });
+        if (imageArray.length === files.length) {
+          setImages(imageArray);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const uploadImage = async () => {
-    if (image) {
-      const storageRef = firebase.storage().ref();
-      const fileRef = storageRef.child(image.name);
-      await fileRef.put(image);
-      const imageUrl = await fileRef.getDownloadURL();
-      return imageUrl;
+  // const uploadImage = async () => {
+  //   if (image) {
+  //     const storageRef = firebase.storage().ref();
+  //     const fileRef = storageRef.child(image.name);
+  //     await fileRef.put(image);
+  //     const imageUrl = await fileRef.getDownloadURL();
+  //     return imageUrl;
+  //   }
+  //   return null;
+  // };
+
+  const uploadImages = async () => {
+    const imagesUrls = [];
+    for (let i = 0; i < images.length; i++) {
+      const { file } = images[i];
+      if (file) {
+        const storageRef = firebase.storage().ref();
+        const fileRef = storageRef.child(file.name);
+        await fileRef.put(file);
+        const imageUrl = await fileRef.getDownloadURL();
+        imagesUrls.push(imageUrl);
+      }
     }
-    return null;
+    return imagesUrls;
   };
 
   const submit = async (e) => {
     e.preventDefault();
 
-    const imageUrl = await uploadImage();
+    const imagesUrl = await uploadImages();
     const newPostRef = firebase.database().ref("posts").push();
     const postId = newPostRef.getKey();
     const newPost = {
@@ -71,14 +97,14 @@ function WhatsHappening() {
       howManyComments: 0,
       comments: [],
       whoLiked: [],
-      imageUrl,
+      imagesUrl,
       uid,
     };
     if (!text) return;
     newPostRef.set(newPost);
     setText("");
-    setImage(null);
-    setThumbnail(null);
+    setImages([]);
+    // setThumbnail(null);
 
     const postsRef = firebase.database().ref("posts");
     try {
@@ -108,13 +134,20 @@ function WhatsHappening() {
                 value={text}
                 onChange={(e) => setText(e.target.value)}
               ></input>
-              {thumbnail && (
+              {/* {thumbnail && (
                 <img
                   src={thumbnail}
                   alt="Thumbnail"
                   className="w-12 h-12 rounded-xl"
                 />
-              )}
+              )} */}
+              <div className="flex">
+                {images.map((image, index) => (
+                  <div key={index} className="w-12 h-12 rounded-xl">
+                    <img src={image.thumbnail} alt={`Thumbnail ${index}`} />
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="flex items-center justify-between px-6 mt-2">
@@ -125,6 +158,7 @@ function WhatsHappening() {
                   style={{ display: "none" }}
                   ref={fileInputRef}
                   onChange={handleImageChange}
+                  multiple
                 ></input>
                 <ImageIcon
                   onClick={handleChooseImage}

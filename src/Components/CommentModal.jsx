@@ -16,7 +16,7 @@ const Overlay = (props) => {
     <div
       className={`
         ${props.isOpen ? "fixed" : "hidden"}
-      top-0 left-0 bottom-0 right-0 z-[98] bg-gray-600 bg-opacity-40`}
+      top-0 left-0 bottom-0 right-0 z-[99] bg-gray-600 bg-opacity-40`}
       onClick={props.closeModal}
     ></div>
   );

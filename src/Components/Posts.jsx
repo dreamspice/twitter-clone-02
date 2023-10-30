@@ -42,7 +42,7 @@ function Posts() {
               likes={post.howManyLikes}
               howManyComments={post.howManyComments}
               comments={post.comments}
-              image={post.imageUrl}
+              images={post.imagesUrl}
             />
           ))}
     </div>
